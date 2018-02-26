@@ -1,5 +1,6 @@
 FROM cagefightbase:latest
 
 ADD src /src
+ADD var/out /var/out
 
 CMD [ "python", "./src/cagefight/cagefightmain.py" ]
