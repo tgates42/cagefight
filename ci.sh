@@ -6,5 +6,6 @@ set -x
 BASEDIR=$(dirname $(readlink -f "$0"))
 echo "${BASEDIR}"
 
-docker build -t cagefight:latest .
-docker run -t cagefight:latest
+docker build -t cagefightbase:latest -f Dockerfile.cagefightbase .
+docker build -t cagefightsrc:latest -f Dockerfile.cagefightsrc .
+docker run -t cagefightsrc:latest

@@ -1,0 +1,5 @@
+FROM cagefightbase:latest
+
+ADD src /src
+
+CMD [ "python", "./src/cagefight/cagefightmain.py" ]
