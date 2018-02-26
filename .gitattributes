@@ -1,0 +1,39 @@
+# enable end-of-line normalization for files detected to be text
+* text=auto
+
+# don't make git guess whether the following files are text:
+# improve diff hunk context for python files too
+*.py text diff=python
+*.po text
+*.js text
+*.java text
+*.html text
+*.css text
+*.xml text
+*.wsdl text
+*.svg text
+*.dtd text
+*.csv text
+*.sh text eol=lf
+*.exe -text
+*.so -text
+*.dll -text
+*.zip -text
+*.gpg -text
+*.ttf -text
+*.pdf -text
+*.odt -text
+*.sxw -text
+*.doc -text
+*.bin -text
+*.jpg -text -delta
+*.jpeg -text -delta
+*.png -text -delta
+*.gif -text -delta
+*.swf -text
+*.sfx -text
+*.7z -text
+*.ico -text
+*.jar -text
+*.gz -text -delta
+*.xpl -text -delta
