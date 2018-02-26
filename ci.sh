@@ -8,4 +8,4 @@ echo "${BASEDIR}"
 
 docker build -t cagefightbase:latest -f Dockerfile.cagefightbase .
 docker build -t cagefightsrc:latest -f Dockerfile.cagefightsrc .
-docker run -t cagefightsrc:latest
+docker run -t cagefightsrc:latest /usr/local/bin/nosetests --exe /src
