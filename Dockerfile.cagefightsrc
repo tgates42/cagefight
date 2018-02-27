@@ -1,5 +1,3 @@
 FROM cagefightbase:latest
 
 ADD src /src
-ENTRYPOINT  ["python"]
-CMD [ "/src/cagefight/cagefightmain.py" ]

@@ -8,4 +8,5 @@ BASEDIR=$(dirname $(readlink -f "$0"))
 if [ ! -d ${BASEDIR}/var/out ] ; then
     mkdir ${BASEDIR}/var/out
 fi
-docker run -v "$(cygpath -w ${BASEDIR}/var/out)":/var/out -t cagefightsrc:latest
+docker run -v "$(cygpath -w ${BASEDIR}/var/out)":/var/out -t cagefightsrc:latest \
+    python /src/cagefight/cagefightmain.py
