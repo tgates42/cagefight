@@ -4,5 +4,5 @@ set -e
 set -x
 
 BASEDIR=$(dirname $(readlink -f "$0"))
-${BASEDIR}/build.sh
-${BASEDIR}/unittest.sh
+. ${BASEDIR}/build.sh
+. ${BASEDIR}/unittest.sh
