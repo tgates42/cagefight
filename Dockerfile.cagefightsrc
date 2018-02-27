@@ -1,6 +1,5 @@
 FROM cagefightbase:latest
 
 ADD src /src
-ADD var/out /var/out
-
-CMD [ "python", "./src/cagefight/cagefightmain.py" ]
+ENTRYPOINT  ["python"]
+CMD [ "/src/cagefight/cagefightmain.py" ]
