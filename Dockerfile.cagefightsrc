@@ -1,3 +1,4 @@
 FROM cagefightbase:latest
 
 ADD src /src
+ADD etc /etc
