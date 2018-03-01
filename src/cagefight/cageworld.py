@@ -20,6 +20,14 @@ class CageWorld(object):
         self.gametick = 0
         self.gameticks = self.fps * self.gameseconds
         self.background = (0, 0, 0, 255)
+        self.num_fighters = config.getint('world', 'num_fighters', fallback=2)
+        self.fighter_controllers = [
+            config.get(
+                'fighter_%s' % (fighterid,), 'docker',
+                fallback='cagefighterbasic:latest',
+            ) for fighterid in range(self.num_fighters)
+        ]
+        self.fighters = []
     @classmethod
     def load(cls, config):
         """
@@ -28,6 +36,58 @@ class CageWorld(object):
         worldkind = config.get('world', 'kind', fallback='lightning')
         worlds = cls.get_world_lookup()
         return worlds[worldkind](config)
+    def save_runsheet(self, fobj):
+        """
+        Produce the docker run bash script
+        """
+        commands = self.get_commands()
+        print("""\
+#!/bin/bash
+
+BASEDIR=$(dirname $(readlink -f "$0"))
+. ${BASEDIR}/env.sh
+%s
+""" % ('\n'.join(commands),), file=fobj)
+    def get_commands(self):
+        """
+        Return the sequence of controller, fighters for each game step before
+        the final render step.
+        """
+        commands = []
+        commands.append(
+            self.get_command(
+                'cagefightsrc:latest', '/var/out',
+                'python /src/maincagefight.py --start',
+            )
+        )
+        for gametick in range(self.gameticks):
+            for fighterid, dockername in enumerate(self.fighter_controllers):
+                commands.append(
+                    self.get_command(
+                        dockername, '/var/out/fighter_%s' % (fighterid,),
+                        ''
+                    )
+                )
+            commands.append(
+                self.get_command(
+                    'cagefightsrc:latest', '/var/out',
+                    'python /src/maincagefight.py --step %s' % (gametick,),
+                )
+            )
+        commands.append(
+            self.get_command(
+                'cagefightsrc:latest', '/var/out',
+                'python /src/maincagefight.py --render',
+            )
+        )
+        return commands
+    def get_command(self, dockertag, subdir, cmd):
+        """
+        Return the appropriate command to run the docker step
+        """
+        return """\
+docker run -v "$(os_path ${BASEDIR}%s)":/var/out -t %s %s
+""" % (subdir, dockertag, cmd)
     @classmethod
     def get_world_lookup(cls):
         """
@@ -56,17 +116,29 @@ class CageWorld(object):
         """
         Called prior to the first render to prepare the starting state.
         """
-        pass
+        self.fighters = [
+            self.get_fighter(num) for num in range(self.num_fighters)
+        ]
+        for fighter in self.fighters:
+            fighter.start()
     def next(self):
         """
         Progress the game state to the next tick.
         """
         self.gametick += 1
+        for fighter in self.fighters:
+            fighter.next()
     def render(self, im):
         """
         Render the display to an image for the provided game mp4 output
         """
-        raise NotImplementedError('Override to draw display')
+        for fighter in self.fighters:
+            fighter.render(im)
+    def get_fighter(self, fighterid):
+        """
+        Override to construct the appropriate fighter
+        """
+        raise NotImplementedError('Override to prepare fighter')
     @staticmethod
     def draw_ball(im, x, y, size, colour):
         """
@@ -79,3 +151,4 @@ class CageWorld(object):
             x1 = x + random.randrange(0, size) - (size / 2)
             y1 = y + random.randrange(0, size) - (size / 2)
             draw.line((x0, y0, x1, y1), fill=colour)
+
