@@ -75,7 +75,7 @@ def main():
             for stepval in steps:
                 print('Step %s' % (stepval,))
                 world.load_world_state('/var/out', last_step)
-                world.next(stepval)
+                world.next('/var/out', stepval)
                 last_step = 'step_%s'  % (stepval,)
                 world.save_world_state('/var/out', last_step)
                 world.save_fighters('/var/out')

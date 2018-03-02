@@ -30,13 +30,27 @@ class LightningFighter(CageFighter):
         qh = self.world.height / 4
         self.posx = random.randint(qw, qw + hw)
         self.posy = random.randint(qh, qh + hh)
-    def next(self):
+    def next(self, filepath):
         """
         Progress the game state to the next tick.
         """
-        details = self.get_instructions()
+        details = self.get_instructions(filepath)
         self.posx += max(-1, min(1, details.get('movex', 0)))
         self.posy += max(-1, min(1, details.get('movey', 0)))
+    def save(self):
+        """
+        Serialize current position
+        """
+        return {
+            'x': self.posx,
+            'y': self.posy,
+        }
+    def load(self, jsonobj):
+        """
+        Deserialize current position
+        """
+        self.posx = jsonobj['x']
+        self.posy = jsonobj['y']
     def render(self, im):
         """
         Render the display to an image for the provided game mp4 output

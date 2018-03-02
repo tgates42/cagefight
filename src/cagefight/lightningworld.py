@@ -28,14 +28,18 @@ class LightningWorld(CageWorld):
         """
         serialize game state
         """
-        return {}
+        result = super(LightningWorld, self).save_world_to_json()
+        return result
     def save_fighter_world_to_json(self, fighterid):
         """
         serialize single player game view
         """
-        return {}
+        result = super(
+            LightningWorld, self
+        ).save_fighter_world_to_json(fighterid)
+        return result
     def load_world_from_json(self, jsonobj):
         """
         deserialize game state
         """
-        pass
+        super(LightningWorld, self).load_world_from_json(jsonobj)

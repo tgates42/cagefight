@@ -77,12 +77,17 @@ class CageWorld(object):
         """
         serialize game state
         """
-        raise NotImplementedError('Override save')
+        result = {
+            'num_fighters': self.num_fighters,
+        }
+        for fighter_id, fighter in enumerate(self.fighters):
+            result['fighter_%s' % (fighter_id,)] = fighter.save()
+        return result
     def save_fighter_world_to_json(self, fighterid):
         """
         serialize single player game view
         """
-        raise NotImplementedError('Override save')
+        return self.fighters[fighterid].save_view()
     def load_world_state(self, basedir, gametick):
         """
         deserialize game state from file
@@ -95,7 +100,12 @@ class CageWorld(object):
         """
         deserialize game state
         """
-        raise NotImplementedError('Override load')
+        self.fighters = []
+        self.num_fighters = jsonobj['num_fighters']
+        for fighterid in range(self.num_fighters):
+            fighter = self.get_fighter(fighterid)
+            fighter.load(jsonobj['fighter_%s' % (fighterid,)])
+            self.fighters.append(fighter)
     def run_fighters(self, basedir):
         """
         Simulate running the fighters in process for speed.
@@ -190,13 +200,16 @@ docker run -v "$(os_path ${BASEDIR}%s)":%s -t %s %s
         ]
         for fighter in self.fighters:
             fighter.start()
-    def next(self, gametick):
+    def next(self, basedir, gametick):
         """
         Progress the game state to the next tick.
         """
         self.gametick = gametick
-        for fighter in self.fighters:
-            fighter.next()
+        for fighter_id, fighter in enumerate(self.fighters):
+            filepath = os.path.join(
+                basedir, 'fighter_%s' % (fighter_id,), 'out.json'
+            )
+            fighter.next(filepath)
     def render(self, im):
         """
         Render the display to an image for the provided game mp4 output
