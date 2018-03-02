@@ -20,15 +20,17 @@ class CageDisplay(object):
         self.cageworld = cageworld
         self.outfile = outfile
         self.background = cageworld.background
-    def run(self):
+    def run(self, dirname):
         """
         Render the display to a mp4 output
         """
         writer = imageio.get_writer(self.outfile, fps=self.fps)
-        self.cageworld.start()
+        self.cageworld.load_world_state(dirname, 'start')
         self.render(writer)
-        for _ in range(self.gameticks -  1):
-            self.cageworld.next()
+        for gametick in range(self.gameticks -  1):
+            self.cageworld.load_world_state(
+                dirname, 'step_%s' % (gametick,)
+            )
             self.render(writer)
         writer.close()
     def render(self, writer):

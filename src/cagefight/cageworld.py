@@ -7,6 +7,9 @@ from __future__ import absolute_import, print_function, division
 
 from PIL import ImageDraw
 import random
+import os
+import json
+import shutil
 
 class CageWorld(object):
     """
@@ -36,6 +39,72 @@ class CageWorld(object):
         worldkind = config.get('world', 'kind', fallback='lightning')
         worlds = cls.get_world_lookup()
         return worlds[worldkind](config)
+    def save_world_state(self, basedir, gametick):
+        """
+        serialize game state to file
+        """
+        subdir = os.path.join(basedir, gametick)
+        if not os.path.isdir(subdir):
+            os.mkdir(subdir)
+        worldfile = os.path.join(subdir, 'world.json')
+        with open(worldfile, 'w') as fobj:
+            json.dump(self.save_world_to_json(), fobj)
+    def save_fighters(self, basedir):
+        """
+        serialize information for fighters to file
+        """
+        for fighterid in range(self.num_fighters):
+            self.save_fighter(basedir, fighterid)
+    def save_fighter(self, basedir, fighterid):
+        """
+        serialize information for a fighter to file
+        """
+        subdir = os.path.join(basedir, 'fighter_%s' % (
+            fighterid,
+        ))
+        if os.path.isdir(subdir):
+            shutil.rmtree(subdir)
+        os.mkdir(subdir)
+        worldfile = os.path.join(subdir, 'world.json')
+        with open(worldfile, 'w') as fobj:
+            json.dump(
+                self.save_fighter_world_to_json(
+                    fighterid,
+                ),
+                fobj,
+            )
+    def save_world_to_json(self):
+        """
+        serialize game state
+        """
+        raise NotImplementedError('Override save')
+    def save_fighter_world_to_json(self, fighterid):
+        """
+        serialize single player game view
+        """
+        raise NotImplementedError('Override save')
+    def load_world_state(self, basedir, gametick):
+        """
+        deserialize game state from file
+        """
+        worldfile = os.path.join(basedir, gametick, 'world.json')
+        with open(worldfile) as fobj:
+            jsonobj = json.load(fobj)
+        self.load_world_from_json(jsonobj)
+    def load_world_from_json(self, jsonobj):
+        """
+        deserialize game state
+        """
+        raise NotImplementedError('Override load')
+    def run_fighters(self, basedir):
+        """
+        Simulate running the fighters in process for speed.
+        """
+        for fighter_id, controller in enumerate(self.fighter_controllers):
+            fighterdir = os.path.join(basedir, 'fighter_%s' % (fighter_id,))
+            modname = controller.split(':', 1)[0]
+            modobj = __import__('%s.main' % (modname,))
+            modobj.main.main(fighterdir)
     def save_runsheet(self, fobj):
         """
         Produce the docker run bash script
@@ -56,7 +125,7 @@ BASEDIR=$(dirname $(readlink -f "$0"))
         commands = []
         commands.append(
             self.get_command(
-                'cagefightsrc:latest', '/var/out',
+                'cagefightsrc:latest', '/var/out', '/var/out',
                 'python /src/maincagefight.py --start',
             )
         )
@@ -65,29 +134,29 @@ BASEDIR=$(dirname $(readlink -f "$0"))
                 commands.append(
                     self.get_command(
                         dockername, '/var/out/fighter_%s' % (fighterid,),
-                        ''
+                        '/var/out', ''
                     )
                 )
             commands.append(
                 self.get_command(
-                    'cagefightsrc:latest', '/var/out',
+                    'cagefightsrc:latest', '/var/out', '/var/out',
                     'python /src/maincagefight.py --step %s' % (gametick,),
                 )
             )
         commands.append(
             self.get_command(
-                'cagefightsrc:latest', '/var/out',
+                'cagefightsrc:latest', '/var/out', '/var/out',
                 'python /src/maincagefight.py --render',
             )
         )
         return commands
-    def get_command(self, dockertag, subdir, cmd):
+    def get_command(self, dockertag, subdir, targetdir, cmd):
         """
         Return the appropriate command to run the docker step
         """
         return """\
-docker run -v "$(os_path ${BASEDIR}%s)":/var/out -t %s %s
-""" % (subdir, dockertag, cmd)
+docker run -v "$(os_path ${BASEDIR}%s)":%s -t %s %s
+""" % (subdir, targetdir, dockertag, cmd)
     @classmethod
     def get_world_lookup(cls):
         """
@@ -121,11 +190,11 @@ docker run -v "$(os_path ${BASEDIR}%s)":/var/out -t %s %s
         ]
         for fighter in self.fighters:
             fighter.start()
-    def next(self):
+    def next(self, gametick):
         """
         Progress the game state to the next tick.
         """
-        self.gametick += 1
+        self.gametick = gametick
         for fighter in self.fighters:
             fighter.next()
     def render(self, im):

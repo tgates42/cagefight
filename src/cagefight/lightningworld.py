@@ -24,3 +24,18 @@ class LightningWorld(CageWorld):
         Overridden to provide a world kind key
         """
         return 'lightning'
+    def save_world_to_json(self):
+        """
+        serialize game state
+        """
+        return {}
+    def save_fighter_world_to_json(self, fighterid):
+        """
+        serialize single player game view
+        """
+        return {}
+    def load_world_from_json(self, jsonobj):
+        """
+        deserialize game state
+        """
+        pass
