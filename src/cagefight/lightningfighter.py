@@ -20,6 +20,7 @@ class LightningFighter(CageFighter):
         self.colour = CageFighter.colours[
             fighterid % len(CageFighter.colours)
         ]
+        self.power = self.world.fighter_power
     def start(self):
         """
         Called prior to the first render to prepare the starting state.
@@ -44,6 +45,7 @@ class LightningFighter(CageFighter):
         return {
             'x': self.posx,
             'y': self.posy,
+            'power': self.power,
         }
     def load(self, jsonobj):
         """
@@ -51,9 +53,15 @@ class LightningFighter(CageFighter):
         """
         self.posx = jsonobj['x']
         self.posy = jsonobj['y']
+        self.power = jsonobj['power']
     def render(self, im):
         """
         Render the display to an image for the provided game mp4 output
         """
         hs = self.size / 2
         self.world.draw_ball(im, self.posx - hs, self.posy - hs, self.size, self.colour)
+    def collision(self, x, y):
+        """
+        Determine if a collision with the specified position has occurred.
+        """
+        return self.world.collision(x, y, self.posx, self.posy, self.size)

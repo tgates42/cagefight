@@ -233,4 +233,14 @@ docker run -v "$(os_path ${BASEDIR}%s)":%s -t %s %s
             x1 = x + random.randrange(0, size) - (size / 2)
             y1 = y + random.randrange(0, size) - (size / 2)
             draw.line((x0, y0, x1, y1), fill=colour)
+    @staticmethod
+    def collision(x1, y1, x2, y2, size):
+        """
+        Check for a collision between two coordinates and a proximity
+        """
+        return (
+            (x1 - size <= x2 <= x1 + size)
+            and
+            (y1 - size <= y2 <= y1 + size)
+        )
 
