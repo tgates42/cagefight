@@ -20,7 +20,6 @@ ARG        MAKEFLAGS="-j2"
 
 ENV         FFMPEG_VERSION=3.4.2     \
             FDKAAC_VERSION=0.1.5      \
-            LAME_VERSION=3.99.5       \
             LIBASS_VERSION=0.13.7     \
             OGG_VERSION=1.3.2         \
             OPUS_VERSION=1.2          \
@@ -156,17 +155,6 @@ RUN \
         make && \
         make install && \
         rm -rf ${DIR}
-### libmp3lame http://lame.sourceforge.net/
-RUN \
-        DIR=/tmp/lame && \
-        mkdir -p ${DIR} && \
-        cd ${DIR} && \
-        curl -sL https://10gbps-io.dl.sourceforge.net/project/lame/lame/$(echo ${LAME_VERSION} | sed -e 's/[^0-9]*\([0-9]*\)[.]\([0-9]*\)[.]\([0-9]*\)\([0-9A-Za-z-]*\)/\1.\2/')/lame-${LAME_VERSION}.tar.gz | \
-        tar -zx --strip-components=1 && \
-        ./configure --prefix="${PREFIX}" --bindir="${PREFIX}/bin" --enable-shared --enable-nasm --enable-pic --disable-frontend && \
-        make && \
-        make install && \
-        rm -rf ${DIR}
 ### xvid https://www.xvid.com/
 RUN \
         DIR=/tmp/xvid && \
@@ -256,7 +244,6 @@ RUN  \
         --enable-avresample \
         --enable-gpl \
         --enable-libvidstab \
-        --enable-libmp3lame \
         --enable-libopenjpeg \
         --enable-libopus \
         --enable-libtheora \
