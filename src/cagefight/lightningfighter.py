@@ -47,6 +47,30 @@ class LightningFighter(CageFighter):
             'y': self.posy,
             'power': self.power,
         }
+    def save_view(self):
+        """
+        In addition to own details add details of food and players that are in sight
+        """
+        result = self.save()
+        result['food'] = [
+            food for food in self.world.food if (
+                (food['x']- self.posx) ** 2 
+                + (food['y'] - self.posy) ** 2
+            ) < 1600
+        ]
+        result['enemy'] = [
+            {
+                'x': fighter.posx,
+                'y': fighter.posy,
+            } for fighter in self.world.fighters if (
+                    fighter.fighterid != self.fighterid
+                and (
+                    (fighter.posx - self.posx) ** 2 
+                    + (fighter.posy - self.posy) ** 2
+                ) < 1600
+            )
+        ]
+        return result
     def load(self, jsonobj):
         """
         Deserialize current position

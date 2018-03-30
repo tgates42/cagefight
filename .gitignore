@@ -17,3 +17,4 @@ chromedriver_service_output.log
 .rnd
 .coverage
 nosetests.html
+.pytest_cache

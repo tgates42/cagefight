@@ -11,6 +11,8 @@ def main(basedir):
     """
     Main entry point
     """
+    with open(os.path.join(basedir, 'world.json') as fobj
+        world = json.load(fobj)
     with open(os.path.join(basedir, 'out.json'), 'w') as fobj:
         move = {'movex': 0, 'movey': 1}
         json.dump(move, fobj)

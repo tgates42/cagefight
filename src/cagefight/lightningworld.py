@@ -100,5 +100,5 @@ class LightningWorld(CageWorld):
         """
         for food in self.food:
             self.draw_ball(
-                im, food['x'], food['y'], 3, (0, 255, 0, 255)
+                im, food['x'] - 2, food['y'] - 2, 4, (0, 255, 0, 255)
             )
