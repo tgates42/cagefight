@@ -12,7 +12,7 @@ def main(basedir):
     """
     Main entry point
     """
-    with open(os.path.join(basedir, 'world.json') as fobj
+    with open(os.path.join(basedir, 'world.json')) as fobj:
         world = json.load(fobj)
         posx = world['x']
         posy = world['y']
@@ -22,7 +22,7 @@ def main(basedir):
                 ((food['x'] - posx) ** 2)
                 + ((food['y'] - posy) ** 2)
             )
-        foods.sort(key=operator.getitem('dist'))
+        foods.sort(key=operator.itemgetter('dist'))
     with open(os.path.join(basedir, 'out.json'), 'w') as fobj:
         if foods:
             move = {
