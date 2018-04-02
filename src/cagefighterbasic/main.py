@@ -16,21 +16,36 @@ def main(basedir):
         world = json.load(fobj)
         posx = world['x']
         posy = world['y']
+        power = world['power']
         foods = world['food']
+        enemies = world['enemy']
+        canfire = world['canfire']
         for food in foods:
             food['dist'] = (
                 ((food['x'] - posx) ** 2)
                 + ((food['y'] - posy) ** 2)
             )
         foods.sort(key=operator.itemgetter('dist'))
+        for enemy in enemies:
+            enemy['dist'] = (
+                ((enemy['x'] - posx) ** 2)
+                + ((enemy['y'] - posy) ** 2)
+            )
+        enemies.sort(key=operator.itemgetter('dist'))
     with open(os.path.join(basedir, 'out.json'), 'w') as fobj:
-        if foods:
+        if enemies and power > 200 and canfire:
             move = {
-                'movex': posx - foods[0]['x'],
-                'movey': posy - foods[0]['y'],
+                'fire': math.atan2(
+                    enemies[0]['y'] - posy, enemies[0]['x'] - posx
+                )
+            }
+        elif foods:
+            move = {
+                'movex': foods[0]['x'] - posx,
+                'movey': foods[0]['y'] - posy,
             }
         else:
-            move = {'movex': 0, 'movey': 1}
+            move = {'movex': 200 - posx, 'movey': 200 - posy}
         json.dump(move, fobj)
     print('Done.')
 
