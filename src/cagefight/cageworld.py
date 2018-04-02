@@ -158,6 +158,13 @@ BASEDIR=$(dirname $(readlink -f "$0"))
                 for fighterid, _ in enumerate(self.fighter_controllers)
             )
         }
+        fighter_dirs = [
+            '/var/out/fighter_%s' % (fighterid,)
+                for fighterid, _ in enumerate(self.fighter_controllers)
+        ]
+        step_dirs = [
+            '/var/out/start',
+        ]
         start_out = dict(main_out)
         worldstate = {
             '/var/out/start/world.json': '/var/out/start/world.json',
@@ -170,6 +177,7 @@ BASEDIR=$(dirname $(readlink -f "$0"))
             self.get_command(
                 'cagefightsrc:latest', {}, start_out,
                 'python /src/maincagefight.py --start',
+                [],
             )
         )
         for gametick in range(self.gameticks):
@@ -185,7 +193,7 @@ BASEDIR=$(dirname $(readlink -f "$0"))
                 commands.append(
                     self.get_command(
                         dockername, fighter_in, fighter_out,
-                        '/plan.sh'
+                        '/plan.sh', [],
                     )
                 )
             worldstate = {
@@ -201,26 +209,30 @@ BASEDIR=$(dirname $(readlink -f "$0"))
                 '/var/out/%s/world.json' % (last_step,):
                     '/var/out/%s/world.json' % (last_step,),
             })
+            step_dirs.append('/var/out/%s' % (last_step,))
             commands.append(
                 self.get_command(
                     'cagefightsrc:latest', step_in, step_out,
                     'python /src/maincagefight.py --step %s' % (gametick,),
+                    fighter_dirs,
                 )
             )
         commands.append(
             self.get_command(
                 'cagefightsrc:latest', render_in, {},
                 'python /src/maincagefight.py --render',
+                step_dirs,
             )
         )
         return commands
-    def get_command(self, dockertag, files_in, files_out, cmd):
+    def get_command(self, dockertag, files_in, files_out, cmd, mkdirs):
         """
         Return the appropriate command to run the docker step
         """
         return """\
 CONTID=$(docker create -t "%(dockertag)s" sleep 600)
 docker start "${CONTID}"
+%(mkdir_cmd)s
 %(file_copy_in)s
 docker exec "${CONTID}" %(cmd)s
 %(file_copy_out)s
@@ -238,6 +250,10 @@ docker rm "${CONTID}"
         'docker cp "${CONTID}:%s" "$(os_path "${BASEDIR}%s")"' % (
             key, val
         ) for key, val in files_out.items()
+    ),
+    'mkdir_cmd': '\n'.join(
+        'docker exec "${CONTID}" mkdir -p %s' % (dirname,)
+            for dirname in mkdirs
     ),
 }
     @classmethod
