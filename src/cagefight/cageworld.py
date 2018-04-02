@@ -183,7 +183,7 @@ BASEDIR=$(dirname $(readlink -f "$0"))
         Return the appropriate command to run the docker step
         """
         return """\
-CONTID=$(docker create -t "%(dockertag)s")
+CONTID=$(docker create -t "%(dockertag)s" sleep 600)
 docker start "${CONTID}"
 %(file_copy_in)s
 docker exec "${CONTID}" %(cmd)s
