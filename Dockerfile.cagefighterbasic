@@ -1,4 +1,6 @@
 FROM python:3.5
 
 ADD src/cagefighterbasic /src
+ADD cagefighterbasic_plan.sh /plan.sh
 CMD ["python", "src/main.py"]
+RUN mkdir -p /var/out

@@ -18,8 +18,8 @@ class CageWorld(object):
     def __init__(self, config):
         self.width = config.getint('world', 'width', fallback=480)
         self.height = config.getint('world', 'height', fallback=480)
-        self.fps = config.getint('world', 'fps', fallback=25)
-        self.gameseconds = config.getint('world', 'duration', fallback=60)
+        self.fps = config.getint('world', 'fps', fallback=10)
+        self.gameseconds = config.getint('world', 'duration', fallback=10)
         self.gametick = 0
         self.gameticks = self.fps * self.gameseconds
         self.background = (0, 0, 0, 255)
@@ -45,7 +45,7 @@ class CageWorld(object):
         """
         subdir = os.path.join(basedir, gametick)
         if not os.path.isdir(subdir):
-            os.mkdir(subdir)
+            os.makedirs(subdir)
         worldfile = os.path.join(subdir, 'world.json')
         with open(worldfile, 'w') as fobj:
             json.dump(self.save_world_to_json(), fobj)
@@ -126,47 +126,84 @@ class CageWorld(object):
 BASEDIR=$(dirname $(readlink -f "$0"))
 . ${BASEDIR}/env.sh
 %s
-""" % ('\n'.join(commands),), file=fobj)
+""" % (
+    '\n'.join(commands),
+), file=fobj)
     def get_commands(self):
         """
         Return the sequence of controller, fighters for each game step before
         the final render step.
         """
-        commands = []
+        commands = ['if [ ! -e "%s" ] ; then mkdir --parents "%s" ; fi' % (
+            dirname,
+            dirname,
+        ) for dirname in (
+            '${BASEDIR}/var/out/fighter_%s' % (fighterid,) for
+                fighterid, _ in enumerate(self.fighter_controllers)
+        )]
+        main_out = {
+            key: key for key in (
+                '/var/out/fighter_%s/world.json' % (fighterid,)
+                for fighterid, _ in enumerate(self.fighter_controllers)
+            )
+        }
         commands.append(
             self.get_command(
-                'cagefightsrc:latest', '/var/out', '/var/out',
+                'cagefightsrc:latest', {}, main_out,
                 'python /src/maincagefight.py --start',
             )
         )
         for gametick in range(self.gameticks):
             for fighterid, dockername in enumerate(self.fighter_controllers):
+                fighter_in = {
+                    '/var/out/fighter_%s/world.json' % (fighterid,):
+                        '/var/out/world.json'
+                }
                 commands.append(
                     self.get_command(
-                        dockername, '/var/out/fighter_%s' % (fighterid,),
-                        '/var/out', ''
+                        dockername, fighter_in, {},
+                        '/plan.sh'
                     )
                 )
             commands.append(
                 self.get_command(
-                    'cagefightsrc:latest', '/var/out', '/var/out',
+                    'cagefightsrc:latest', {}, {},
                     'python /src/maincagefight.py --step %s' % (gametick,),
                 )
             )
         commands.append(
             self.get_command(
-                'cagefightsrc:latest', '/var/out', '/var/out',
+                'cagefightsrc:latest', {}, {},
                 'python /src/maincagefight.py --render',
             )
         )
         return commands
-    def get_command(self, dockertag, subdir, targetdir, cmd):
+    def get_command(self, dockertag, files_in, files_out, cmd):
         """
         Return the appropriate command to run the docker step
         """
         return """\
-docker run -v "$(os_path ${BASEDIR}%s)":%s -t %s %s
-""" % (subdir, targetdir, dockertag, cmd)
+CONTID=$(docker create -t "%(dockertag)s")
+docker start "${CONTID}"
+%(file_copy_in)s
+docker exec "${CONTID}" %(cmd)s
+%(file_copy_out)s
+docker stop "${CONTID}"
+docker rm "${CONTID}"
+""" % {
+    'dockertag': dockertag,
+    'cmd': cmd,
+    'file_copy_in': '\n'.join(
+        'docker cp "$(os_path "${BASEDIR}%s")" "${CONTID}:%s"' % (
+            key, val
+        ) for key, val in files_in.items()
+    ),
+    'file_copy_out': '\n'.join(
+        'docker cp "${CONTID}:%s" "$(os_path "${BASEDIR}%s")"' % (
+            key, val
+        ) for key, val in files_out.items()
+    ),
+}
     @classmethod
     def get_world_lookup(cls):
         """

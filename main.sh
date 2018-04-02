@@ -10,6 +10,10 @@ BASEDIR=$(dirname $(readlink -f "$0"))
 if [ ! -d ${BASEDIR}/var/out ] ; then
     mkdir ${BASEDIR}/var/out
 fi
-docker run -v "$(os_path ${BASEDIR}/var/out)":/var/out -t cagefightsrc:latest \
-    python /src/coordinatecagefight.py
+CONTID=$(docker create -t cagefightsrc:latest)
+docker start "${CONTID}"
+docker exec "${CONTID}" /usr/bin/python /src/coordinatecagefight.py
+docker cp "${CONTID}:/var/out/run.sh" "$(os_path ${BASEDIR}/var/out/run.sh)"
+docker stop "${CONTID}"
+docker rm "${CONTID}"
 . ${BASEDIR}/var/out/run.sh

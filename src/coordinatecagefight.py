@@ -31,6 +31,8 @@ def main():
         config = configparser.ConfigParser()
         config.read('/etc/default.ini')
         world = CageWorld.load(config)
+        if not os.path.isdir('/var/out'):
+            os.makedirs('/var/out')
         with open('/var/out/run.sh', 'w') as fobj:
             world.save_runsheet(fobj)
         print('Complete')
