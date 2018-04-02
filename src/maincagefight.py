@@ -71,13 +71,14 @@ def main():
             steps = [int(args['--step'])] if args['--step'] else range(
                 world.gameticks
             )
-            last_step = 'start'
             for stepval in steps:
                 print('Step %s' % (stepval,))
-                world.load_world_state('/var/out', last_step)
+                world.load_world_state(
+                    '/var/out',
+                    'start' if stepval == 0 else 'step_%s' % (stepval - 1,)
+                )
                 world.next('/var/out', stepval)
-                last_step = 'step_%s'  % (stepval,)
-                world.save_world_state('/var/out', last_step)
+                world.save_world_state('/var/out', 'step_%s'  % (stepval,))
                 world.save_fighters('/var/out')
                 if args['--all']:
                     world.run_fighters('/var/out')
