@@ -141,10 +141,10 @@ BASEDIR=$(dirname $(readlink -f "$0"))
             '${BASEDIR}/var/out/fighter_%s' % (fighterid,) for
                 fighterid, _ in enumerate(self.fighter_controllers)
         ] + [
-            '${BASEDIR}/var/step_%s' % (gametick,)
+            '${BASEDIR}/var/out/step_%s' % (gametick,)
                 for gametick in range(self.gameticks)
         ] + [
-            '${BASEDIR}/var/start',
+            '${BASEDIR}/var/out/start',
         ])]
         main_in = {
             key: key for key in (
