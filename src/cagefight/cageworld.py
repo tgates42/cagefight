@@ -178,9 +178,13 @@ BASEDIR=$(dirname $(readlink -f "$0"))
                     '/var/out/fighter_%s/world.json' % (fighterid,):
                         '/var/out/world.json'
                 }
+                fighter_out = {
+                    '/var/out/out.json':
+                        '/var/out/fighter_%s/out.json' % (fighterid,)
+                }
                 commands.append(
                     self.get_command(
-                        dockername, fighter_in, {},
+                        dockername, fighter_in, fighter_out,
                         '/plan.sh'
                     )
                 )
