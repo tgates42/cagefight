@@ -220,7 +220,9 @@ BASEDIR=$(dirname $(readlink -f "$0"))
             )
         commands.append(
             self.get_command(
-                'cagefightsrc:latest', render_in, {},
+                'cagefightsrc:latest', render_in, {
+                    '/var/out/output.mp4': '/var/out/output.mp4',
+                },
                 'python /src/maincagefight.py --render',
                 step_dirs,
             )
