@@ -200,6 +200,7 @@ BASEDIR=$(dirname $(readlink -f "$0"))
                 '/var/out/%s/world.json' % (last_step,):
                     '/var/out/%s/world.json' % (last_step,),
             }
+            main_dirs = fighter_dirs + ['/var/out/%s' % (last_step,)]
             step_in = dict(main_in)
             step_in.update(worldstate)
             render_in.update(worldstate)
@@ -214,7 +215,7 @@ BASEDIR=$(dirname $(readlink -f "$0"))
                 self.get_command(
                     'cagefightsrc:latest', step_in, step_out,
                     'python /src/maincagefight.py --step %s' % (gametick,),
-                    fighter_dirs,
+                    main_dirs,
                 )
             )
         commands.append(
