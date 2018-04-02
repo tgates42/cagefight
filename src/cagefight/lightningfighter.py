@@ -21,6 +21,16 @@ class LightningFighter(CageFighter):
             fighterid % len(CageFighter.colours)
         ]
         self.power = self.world.fighter_power
+        self.cooldown = 0
+    @property
+    def canfire(self):
+        """
+        Check if the gun is cool and we have the power to fire
+        """
+        return (
+            1 if self.cooldown == 0 else 0
+                and self.power > 30
+        )
     def start(self):
         """
         Called prior to the first render to prepare the starting state.
@@ -36,8 +46,15 @@ class LightningFighter(CageFighter):
         Progress the game state to the next tick.
         """
         details = self.get_instructions(filepath)
-        self.posx += max(-1, min(1, details.get('movex', 0)))
-        self.posy += max(-1, min(1, details.get('movey', 0)))
+        if self.cooldown > 0:
+            self.cooldown -= 1
+        if 'fire' in details:
+            if self.canfire:
+                self.power -= 30
+                self.cooldown = 10
+        else:
+            self.posx += max(-1, min(1, details.get('movex', 0)))
+            self.posy += max(-1, min(1, details.get('movey', 0)))
     def save(self):
         """
         Serialize current position
@@ -46,6 +63,8 @@ class LightningFighter(CageFighter):
             'x': self.posx,
             'y': self.posy,
             'power': self.power,
+            'canfire': self.canfire,
+            'cooldown': self.cooldown,
         }
     def save_view(self):
         """
@@ -54,7 +73,7 @@ class LightningFighter(CageFighter):
         result = self.save()
         result['food'] = [
             food for food in self.world.food if (
-                (food['x']- self.posx) ** 2 
+                (food['x']- self.posx) ** 2
                 + (food['y'] - self.posy) ** 2
             ) < 1600
         ]
@@ -65,7 +84,7 @@ class LightningFighter(CageFighter):
             } for fighter in self.world.fighters if (
                     fighter.fighterid != self.fighterid
                 and (
-                    (fighter.posx - self.posx) ** 2 
+                    (fighter.posx - self.posx) ** 2
                     + (fighter.posy - self.posy) ** 2
                 ) < 1600
             )
@@ -78,6 +97,7 @@ class LightningFighter(CageFighter):
         self.posx = jsonobj['x']
         self.posy = jsonobj['y']
         self.power = jsonobj['power']
+        self.cooldown = jsonobj['cooldown']
     def render(self, im):
         """
         Render the display to an image for the provided game mp4 output
