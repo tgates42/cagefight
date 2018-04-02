@@ -137,19 +137,38 @@ BASEDIR=$(dirname $(readlink -f "$0"))
         commands = ['if [ ! -e "%s" ] ; then mkdir --parents "%s" ; fi' % (
             dirname,
             dirname,
-        ) for dirname in (
+        ) for dirname in ([
             '${BASEDIR}/var/out/fighter_%s' % (fighterid,) for
                 fighterid, _ in enumerate(self.fighter_controllers)
-        )]
+        ] + [
+            '${BASEDIR}/var/step_%s' % (gametick,)
+                for gametick in range(self.gameticks)
+        ] + [
+            '${BASEDIR}/var/start',
+        ])]
+        main_in = {
+            key: key for key in (
+                '/var/out/fighter_%s/out.json' % (fighterid,)
+                for fighterid, _ in enumerate(self.fighter_controllers)
+            )
+        }
         main_out = {
             key: key for key in (
                 '/var/out/fighter_%s/world.json' % (fighterid,)
                 for fighterid, _ in enumerate(self.fighter_controllers)
             )
         }
+        start_out = dict(main_out)
+        worldstate = {
+            '/var/out/start/world.json': '/var/out/start/world.json',
+        }
+        render_in = {}
+        start_out.update(worldstate)
+        render_in.update(worldstate)
+        last_step = 'start'
         commands.append(
             self.get_command(
-                'cagefightsrc:latest', {}, main_out,
+                'cagefightsrc:latest', {}, start_out,
                 'python /src/maincagefight.py --start',
             )
         )
@@ -165,15 +184,28 @@ BASEDIR=$(dirname $(readlink -f "$0"))
                         '/plan.sh'
                     )
                 )
+            worldstate = {
+                '/var/out/%s/world.json' % (last_step,):
+                    '/var/out/%s/world.json' % (last_step,),
+            }
+            step_in = dict(main_in)
+            step_in.update(worldstate)
+            render_in.update(worldstate)
+            last_step = 'step_%s' % (gametick,)
+            step_out = dict(main_out)
+            step_out.update({
+                '/var/out/%s/world.json' % (last_step,):
+                    '/var/out/%s/world.json' % (last_step,),
+            })
             commands.append(
                 self.get_command(
-                    'cagefightsrc:latest', {}, {},
+                    'cagefightsrc:latest', step_in, step_out,
                     'python /src/maincagefight.py --step %s' % (gametick,),
                 )
             )
         commands.append(
             self.get_command(
-                'cagefightsrc:latest', {}, {},
+                'cagefightsrc:latest', render_in, {},
                 'python /src/maincagefight.py --render',
             )
         )
