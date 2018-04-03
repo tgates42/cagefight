@@ -51,6 +51,7 @@ class LightningWorld(CageWorld):
             self.gen_food()
         self.eat()
         self.battle()
+        self.colide()
     def eat(self):
         """
         Check if any players are near food and if so they consume the power
@@ -87,6 +88,22 @@ class LightningWorld(CageWorld):
             if not drop:
                 result.append(projectileitem)
         self.projectiles = result
+     def colide(self):
+        """
+        Check if any players are near other fighters and if so they are damaged
+        """
+        result = []
+        for fighter in self.fighters:
+            for altfighter in self.fighters:
+                if fighter.fighterid == altfighter.fighterid:
+                    continue
+                if fighter.power <= 0 or altfighter.power <= 0:
+                    continue
+                if fighter.collision(
+                            altfighter.posx, altfighter.posy,
+                        ):
+                    fighter.power -= 5000
+                    altfighter.power -= 5000
     def gen_food(self):
         """
         Create a power ball randomly in the world.
