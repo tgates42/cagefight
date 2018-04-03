@@ -88,7 +88,7 @@ class LightningFighter(CageFighter):
             food for food in self.world.food if (
                 (food['x']- self.posx) ** 2
                 + (food['y'] - self.posy) ** 2
-            ) < 1600
+            ) < self.world.view_range ** 2
         ]
         result['enemy'] = [
             {
@@ -99,7 +99,7 @@ class LightningFighter(CageFighter):
                 and (
                     (fighter.posx - self.posx) ** 2
                     + (fighter.posy - self.posy) ** 2
-                ) < 1600
+                ) < self.world.view_range ** 2
                 and fighter.power > 0
             )
         ]

@@ -16,7 +16,7 @@ class LightningWorld(CageWorld):
         self.food = []
         self.food_probability = config.getfloat(
             'lightning', 'food_probability',
-            fallback=0.3,
+            fallback=0.1,
         )
         self.food_power = config.getint(
             'lightning', 'food_power', fallback=50,
@@ -30,7 +30,11 @@ class LightningWorld(CageWorld):
         )
         self.fighter_speed = config.getfloat(
             'lightning', 'figher_speed',
-            fallback=2.0,
+            fallback=1.0,
+        )
+        self.view_range = config.getfloat(
+            'lightning', 'view_range',
+            fallback=100.0,
         )
     def get_fighter(self, fighterid):
         """
@@ -88,11 +92,10 @@ class LightningWorld(CageWorld):
             if not drop:
                 result.append(projectileitem)
         self.projectiles = result
-     def colide(self):
+    def colide(self):
         """
         Check if any players are near other fighters and if so they are damaged
         """
-        result = []
         for fighter in self.fighters:
             for altfighter in self.fighters:
                 if fighter.fighterid == altfighter.fighterid:
