@@ -18,12 +18,12 @@ class CageWorld(object):
     def __init__(self, config):
         self.width = config.getint('world', 'width', fallback=480)
         self.height = config.getint('world', 'height', fallback=480)
-        self.fps = config.getint('world', 'fps', fallback=10)
-        self.gameseconds = config.getint('world', 'duration', fallback=60)
+        self.fps = config.getint('world', 'fps', fallback=25)
+        self.gameseconds = config.getint('world', 'duration', fallback=30)
         self.gametick = 0
         self.gameticks = self.fps * self.gameseconds
         self.background = (0, 0, 0, 255)
-        self.num_fighters = config.getint('world', 'num_fighters', fallback=20)
+        self.num_fighters = config.getint('world', 'num_fighters', fallback=5)
         self.fighter_controllers = [
             config.get(
                 'fighter_%s' % (fighterid,), 'docker',

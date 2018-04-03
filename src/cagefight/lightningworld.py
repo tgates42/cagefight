@@ -16,13 +16,21 @@ class LightningWorld(CageWorld):
         self.food = []
         self.food_probability = config.getfloat(
             'lightning', 'food_probability',
-            fallback=0.1,
+            fallback=0.3,
         )
         self.food_power = config.getint(
             'lightning', 'food_power', fallback=50,
         )
         self.fighter_power = config.getint(
             'lightning', 'start_power', fallback=500,
+        )
+        self.projectile_speed = config.getfloat(
+            'lightning', 'projectile_speed',
+            fallback=5.0,
+        )
+        self.fighter_speed = config.getfloat(
+            'lightning', 'figher_speed',
+            fallback=2.0,
         )
     def get_fighter(self, fighterid):
         """

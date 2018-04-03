@@ -40,8 +40,8 @@ class LightningFighter(CageFighter):
         qw = self.world.width / 4
         hh = self.world.height / 2
         qh = self.world.height / 4
-        self.posx = random.randint(qw, qw + hw)
-        self.posy = random.randint(qh, qh + hh)
+        self.posx = (random.randint(qw, qw + hw) + hw) % self.world.width
+        self.posy = (random.randint(qh, qh + hh) + hh) % self.world.height
     def next(self, filepath):
         """
         Progress the game state to the next tick.
@@ -61,12 +61,13 @@ class LightningFighter(CageFighter):
                 proj.owner = self.fighterid
                 proj.posx = self.posx
                 proj.posy = self.posy
-                proj.deltax = math.cos(radians) * 5
-                proj.deltay = math.sin(radians) * 5
+                proj.deltax = math.cos(radians) * self.world.projectile_speed
+                proj.deltay = math.sin(radians) * self.world.projectile_speed
                 self.world.add_projectile(proj)
-        else:
-            self.posx += max(-1, min(1, details.get('movex', 0)))
-            self.posy += max(-1, min(1, details.get('movey', 0)))
+        elif 'move' in details:
+            radians = details['move']
+            self.posx += math.cos(radians) * self.world.fighter_speed
+            self.posy += math.sin(radians) * self.world.fighter_speed
     def save(self):
         """
         Serialize current position

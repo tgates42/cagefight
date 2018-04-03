@@ -38,16 +38,24 @@ def main(basedir):
             print('Attack!')
             move = {
                 'fire': math.atan2(
-                    enemies[0]['y'] - posy, enemies[0]['x'] - posx
-                )
+                    enemies[0]['y'] - posy,
+                    enemies[0]['x'] - posx,
+                ),
             }
         elif foods:
             move = {
-                'movex': foods[0]['x'] - posx,
-                'movey': foods[0]['y'] - posy,
+                'move': math.atan2(
+                    foods[0]['y'] - posy,
+                    foods[0]['x'] - posx,
+                ),
             }
         else:
-            move = {'movex': 200 - posx, 'movey': 200 - posy}
+            move = {
+                'move': math.atan2(
+                    200 - posy,
+                    200 - posx,
+                ),
+            }
         json.dump(move, fobj)
     print('Done.')
 
