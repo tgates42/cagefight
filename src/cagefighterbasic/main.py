@@ -35,6 +35,7 @@ def main(basedir):
         enemies.sort(key=operator.itemgetter('dist'))
     with open(os.path.join(basedir, 'out.json'), 'w') as fobj:
         if enemies and power > 200 and canfire:
+            print('Attack!')
             move = {
                 'fire': math.atan2(
                     enemies[0]['y'] - posy, enemies[0]['x'] - posx

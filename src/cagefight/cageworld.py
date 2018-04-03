@@ -19,11 +19,11 @@ class CageWorld(object):
         self.width = config.getint('world', 'width', fallback=480)
         self.height = config.getint('world', 'height', fallback=480)
         self.fps = config.getint('world', 'fps', fallback=10)
-        self.gameseconds = config.getint('world', 'duration', fallback=10)
+        self.gameseconds = config.getint('world', 'duration', fallback=60)
         self.gametick = 0
         self.gameticks = self.fps * self.gameseconds
         self.background = (0, 0, 0, 255)
-        self.num_fighters = config.getint('world', 'num_fighters', fallback=2)
+        self.num_fighters = config.getint('world', 'num_fighters', fallback=20)
         self.fighter_controllers = [
             config.get(
                 'fighter_%s' % (fighterid,), 'docker',
@@ -31,6 +31,7 @@ class CageWorld(object):
             ) for fighterid in range(self.num_fighters)
         ]
         self.fighters = []
+        self.projectiles = []
     @classmethod
     def load(cls, config):
         """
@@ -79,9 +80,12 @@ class CageWorld(object):
         """
         result = {
             'num_fighters': self.num_fighters,
+            'num_projectiles': len(self.projectiles),
         }
         for fighter_id, fighter in enumerate(self.fighters):
             result['fighter_%s' % (fighter_id,)] = fighter.save()
+        for projectile_id, projectile in enumerate(self.projectiles):
+            result['projectile_%s' % (projectile_id,)] = projectile.save()
         return result
     def save_fighter_world_to_json(self, fighterid):
         """
@@ -106,6 +110,12 @@ class CageWorld(object):
             fighter = self.get_fighter(fighterid)
             fighter.load(jsonobj['fighter_%s' % (fighterid,)])
             self.fighters.append(fighter)
+        num_projectiles = jsonobj['num_projectiles']
+        self.projectiles = []
+        for projectileid in range(num_projectiles):
+            projectile = self.get_projectile()
+            projectile.load(jsonobj['projectile_%s' % (projectileid,)])
+            self.projectiles.append(projectile)
     def run_fighters(self, basedir):
         """
         Simulate running the fighters in process for speed.
@@ -302,17 +312,26 @@ docker rm "${CONTID}"
                 basedir, 'fighter_%s' % (fighter_id,), 'out.json'
             )
             fighter.next(filepath)
+        for projectile in self.projectiles:
+            projectile.next()
     def render(self, im):
         """
         Render the display to an image for the provided game mp4 output
         """
         for fighter in self.fighters:
             fighter.render(im)
+        for projectile in self.projectiles:
+            projectile.render(im)
     def get_fighter(self, fighterid):
         """
         Override to construct the appropriate fighter
         """
         raise NotImplementedError('Override to prepare fighter')
+    def get_projectile(self):
+        """
+        Override to construct the appropriate projectile
+        """
+        raise NotImplementedError('Override to prepare projectile')
     @staticmethod
     def draw_ball(im, x, y, size, colour):
         """
@@ -335,4 +354,9 @@ docker rm "${CONTID}"
             and
             (y1 - size <= y2 <= y1 + size)
         )
+    def add_projectile(self, projectile):
+        """
+        Add a projectile to the world
+        """
+        self.projectiles.append(projectile)
 

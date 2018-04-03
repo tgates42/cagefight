@@ -6,6 +6,7 @@ from __future__ import absolute_import, print_function, division
 
 from cagefight.cagefighter import CageFighter
 import random
+import math
 
 class LightningFighter(CageFighter):
     """
@@ -45,6 +46,9 @@ class LightningFighter(CageFighter):
         """
         Progress the game state to the next tick.
         """
+        if self.power <= 0:
+            # dead
+            return
         details = self.get_instructions(filepath)
         if self.cooldown > 0:
             self.cooldown -= 1
@@ -52,6 +56,14 @@ class LightningFighter(CageFighter):
             if self.canfire:
                 self.power -= 30
                 self.cooldown = 10
+                radians = details['fire']
+                proj = self.world.get_projectile()
+                proj.owner = self.fighterid
+                proj.posx = self.posx
+                proj.posy = self.posy
+                proj.deltax = math.cos(radians) * 5
+                proj.deltay = math.sin(radians) * 5
+                self.world.add_projectile(proj)
         else:
             self.posx += max(-1, min(1, details.get('movex', 0)))
             self.posy += max(-1, min(1, details.get('movey', 0)))
@@ -87,6 +99,7 @@ class LightningFighter(CageFighter):
                     (fighter.posx - self.posx) ** 2
                     + (fighter.posy - self.posy) ** 2
                 ) < 1600
+                and fighter.power > 0
             )
         ]
         return result
@@ -102,6 +115,9 @@ class LightningFighter(CageFighter):
         """
         Render the display to an image for the provided game mp4 output
         """
+        if self.power <= 0:
+            # dead
+            return
         hs = self.size / 2
         self.world.draw_ball(im, self.posx - hs, self.posy - hs, self.size, self.colour)
     def collision(self, x, y):

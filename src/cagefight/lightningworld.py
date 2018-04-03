@@ -30,12 +30,19 @@ class LightningWorld(CageWorld):
         """
         from cagefight.lightningfighter import LightningFighter
         return LightningFighter(self, fighterid)
+    def get_projectile(self):
+        """
+        Prepare the fighter implementation
+        """
+        from cagefight.lightningprojectile import LightningProjectile
+        return LightningProjectile(self)
     def next(self, basedir, gametick):
         super(LightningWorld, self).next(basedir, gametick)
         foodcheck = random.random()
         if foodcheck < self.food_probability:
             self.gen_food()
         self.eat()
+        self.battle()
     def eat(self):
         """
         Check if any players are near food and if so they consume the power
@@ -53,6 +60,25 @@ class LightningWorld(CageWorld):
             if not drop:
                 result.append(fooditem)
         self.food = result
+    def battle(self):
+        """
+        Check if any players are near projectiles and if so they are damaged
+        """
+        result = []
+        for projectileitem in self.projectiles:
+            drop = False
+            for fighter in self.fighters:
+                if fighter.fighterid == projectileitem.owner:
+                    continue
+                if fighter.collision(
+                            projectileitem.posx, projectileitem.posy,
+                        ):
+                    fighter.power -= 300
+                    drop = True
+                    break
+            if not drop:
+                result.append(projectileitem)
+        self.projectiles = result
     def gen_food(self):
         """
         Create a power ball randomly in the world.
