@@ -12,13 +12,14 @@ class CageDisplay(object):
     """
     Display for the game state to render mp4 output
     """
-    def __init__(self, cageworld, outfile):
+    def __init__(self, cageworld, outfile, csvfile):
         self.width = cageworld.width
         self.height = cageworld.height
         self.fps = cageworld.fps
         self.gameticks = cageworld.gameticks
         self.cageworld = cageworld
         self.outfile = outfile
+        self.csvfile = csvfile
         self.background = cageworld.background
     def run(self, dirname):
         """
@@ -33,6 +34,7 @@ class CageDisplay(object):
             )
             self.render(writer)
         writer.close()
+        self.cageworld.save_csv_result(self.csvfile)
     def render(self, writer):
         """
         Obtain an image of the current state and save it to the movie writer

@@ -53,6 +53,16 @@ class CageFighter(object):
         Render the display to an image for the provided game mp4 output
         """
         raise NotImplementedError('Override to draw fighter')
+    def name(self):
+        """
+        Override to name fighters
+        """
+        raise NotImplementedError('Override to name fighter')
+    def text_result(self):
+        """
+        Override to provide fighter result
+        """
+        raise NotImplementedError('Override to provide fighter result')
     def get_instructions(self, filepath):
         """
         Load instructions from the filepath
@@ -61,3 +71,13 @@ class CageFighter(object):
             return {}
         with open(filepath) as fobj:
             return json.load(fobj)
+    def csv_header(self):
+        """
+        Can be overriden for a custom result
+        """
+        return ['Name', 'Result']
+    def csv_result(self):
+        """
+        Can be overriden for a custom result
+        """
+        return [self.name(), self.text_result()]

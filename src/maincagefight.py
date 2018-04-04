@@ -97,7 +97,8 @@ def render(world):
     """
     from cagefight.cagedisplay import CageDisplay
     outfile = '/var/out/output.mp4'
-    display = CageDisplay(world, outfile)
+    resultfile = '/var/out/results.csv'
+    display = CageDisplay(world, outfile, resultfile)
     display.run('/var/out')
 
 if __name__ == '__main__':

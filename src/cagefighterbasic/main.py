@@ -56,6 +56,9 @@ def main(basedir):
                     200 - posx,
                 ),
             }
+        move.update({
+            'name': 'basic',
+        })
         json.dump(move, fobj)
     print('Done.')
 

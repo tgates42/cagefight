@@ -23,6 +23,9 @@ class LightningFighter(CageFighter):
         ]
         self.power = self.world.fighter_power
         self.cooldown = 0
+        self._name = 'lightning_fighter_%s' % (
+            self.fighterid,
+        )
     @property
     def canfire(self):
         """
@@ -50,6 +53,11 @@ class LightningFighter(CageFighter):
             # dead
             return
         details = self.get_instructions(filepath)
+        if 'name' in details:
+            self._name = '%s_%s' % (
+                details['name'],
+                self.fighterid,
+            )
         if self.cooldown > 0:
             self.cooldown -= 1
         if 'fire' in details:
@@ -112,6 +120,16 @@ class LightningFighter(CageFighter):
         self.posy = jsonobj['y']
         self.power = jsonobj['power']
         self.cooldown = jsonobj['cooldown']
+    def name(self):
+        """
+        name fighters
+        """
+        return self._name
+    def text_result(self):
+        """
+        fighter result
+        """
+        return str(self.power)
     def render(self, im):
         """
         Render the display to an image for the provided game mp4 output

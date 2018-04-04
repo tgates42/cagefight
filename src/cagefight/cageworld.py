@@ -10,6 +10,7 @@ import random
 import os
 import json
 import shutil
+import csv
 
 class CageWorld(object):
     """
@@ -232,6 +233,7 @@ BASEDIR=$(dirname $(readlink -f "$0"))
             self.get_command(
                 'cagefightsrc:latest', render_in, {
                     '/var/out/output.mp4': '/var/out/output.mp4',
+                    '/var/out/results.csv': '/var/out/results.csv',
                 },
                 'python /src/maincagefight.py --render',
                 step_dirs,
@@ -359,4 +361,16 @@ docker rm "${CONTID}"
         Add a projectile to the world
         """
         self.projectiles.append(projectile)
+    def save_csv_result(self, filename):
+        """
+        Write results of fighter winner to CSV
+        """
+        with open(filename, 'w') as fobj:
+            csvout = csv.writer(fobj)
+            first = True
+            for fighter in self.fighters:
+                if first:
+                    csvout.writerow(fighter.csv_header())
+                    first = False
+                csvout.writerow(fighter.csv_result())
 
